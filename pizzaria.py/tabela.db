@@ -1,0 +1,19 @@
+import sqlite3
+conexao = sqlite3.connect('pizzaria.db')
+cursor = conexao.cursor()
+cursor.execute('''
+               CREATE TABLE IF NOT EXISTS pizzas (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nome TEXT NOT NULL,
+                preco REAL NOT NULL
+               )
+                ''')
+conexao.commit()
+conexao.close()
+
+def adicionar_pizza(nome, preco):
+    conexao = sqlite3.connect('pizzaria.db')
+    cursor = conexao.cursor()
+    cursor.execute("INSERT INTO pizzas (nome, preco) VALUES (?, ?)", (nome, preco))
+    conexao.commit()
+    conexao.close()
