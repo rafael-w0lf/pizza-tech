@@ -10,6 +10,7 @@ cursor.execute('''
                 ''')
 conexao.commit()
 conexao.close()
+print("Banco de dadaos e tabela criados com sucesso!")
 
 def adicionar_pizza(nome, preco):
     conexao = sqlite3.connect('pizzaria.db')
