@@ -1,8 +1,8 @@
 import sqlite3
-conexao = sqlite3.connect('pizzaria.db')
+conexao = sqlite3.connect('tabela.db')
 cursor = conexao.cursor()
 cursor.execute('''
-               CREATE TABLE IF NOT EXISTS pizzas (
+                CREATE TABLE IF NOT EXISTS cardapio (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 nome TEXT NOT NULL,
                 preco REAL NOT NULL
