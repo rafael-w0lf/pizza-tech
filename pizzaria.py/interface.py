@@ -1,85 +1,109 @@
 import flet as ft
 import sqlite3
 
+
+def criar_tabela():
+    conexao = sqlite3.connect("tabela.db")
+    cursor = conexao.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS pizzas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            preco REAL NOT NULL
+        )
+    """)
+    conexao.commit()
+    conexao.close()
+
+
+def adicionar_pizza_ao_banco(nome, preco):
+    conexao = sqlite3.connect("tabela.db")
+    cursor = conexao.cursor()
+    cursor.execute(
+        "INSERT INTO pizzas (nome, preco) VALUES (?, ?)",
+        (nome, preco)
+    )
+    conexao.commit()
+    conexao.close()
+
+
 def main(page: ft.Page):
     page.title = "Gerenciador Pizza-Tech"
     page.window_width = 450
     page.window_height = 700
     page.theme_mode = ft.ThemeMode.LIGHT
+    page.padding = 20
 
-#manipular o banco de dados
-def adicionar_pizza_ao_banco(nome, preco):
-    conexao = sqlite3.connect('tabela.db')
-    cursor = conexao.cursor()
-    cursor.execute('INSERT INTO cardapio (nome, preco) VALUES (?, ?)', (nome, preco))
-    conexao.commit()
-    conexao.close()
-
-#componentes de interface
-    txt_nome = ft.TextField(label="Nome da Pizza", hint_text="Ex: Portuguesa")
+    txt_nome = ft.TextField(label="Nome da Pizza")
     txt_preco = ft.TextField(label="Preço (R$)", keyboard_type=ft.KeyboardType.NUMBER)
 
-    lista_pizzas = ft.Column(spacing=10, scroll=ft.ScrollMode.ADAPTIVE, expand=True)
+    lista_pizzas = ft.Column(spacing=10, scroll=ft.ScrollMode.AUTO, expand=True)
 
-    #função que atualiza a lista na tela
-    def  carregar_pizzas():
-         lista_pizzas.controls.clear()
-         conexao = sqlite3.connect('tabela.db')
-         cursor = conexao.cursor()
-         cursor.execute('SELECT nome, preco FROM cardapio ORDER BY id DESC')
+    def carregar_pizzas():
+        lista_pizzas.controls.clear()
 
-         for nome, preco in cursor.fetchall():
-                lista_pizzas.controls.append(
-                     ft.ListTile(
-                          title=ft.Text(nome),
-                          subtitle=ft.Text(f"R$ {preco:.2f}"),
-                          loading=ft.Icon(ft.icons.LOCAL_PIZZA, color="red")
-                     )
+        conexao = sqlite3.connect("pizzaria.db")
+        cursor = conexao.cursor()
+        cursor.execute("SELECT nome, preco FROM pizzas ORDER BY id DESC")
+
+        dados = cursor.fetchall()
+
+        for nome, preco in dados:
+            lista_pizzas.controls.append(
+                ft.ListTile(
+                    title=ft.Text(nome),
+                    subtitle=ft.Text(f"R$ {preco:.2f}"),
+                    leading=ft.Icon(ft.Icons.RESTAURANT),  # ✔️ corrigido aqui
                 )
-                conexao.close()
-                page.update()
+            )
 
-#função do botão cadastrar
-def cadastrar_clicado(e):
-    if txt_nome.value == "" or txt_preco.value == "":
-         page.show_snack_bar(ft.SnackBar(ft.Text("Por favor, preencha todos os campos!")))
-         return
-    
-    try:
-         #salva no banco de dados
-         adicionar_pizza_ao_banco(txt_nome.value, float(txt_preco.value.replace(',', '.')))
+        conexao.close()
+        page.update()
 
-         #limpa os campos e avisa o usuário
-         txt_nome.value = ""
-         txt_preco.value = ""
-         page.show_snack_bar(ft.Snackbar(ft.Text("Pizza cadastrada com sucesso!")))
+    def cadastrar_clicado(e):
+        if not txt_nome.value or not txt_preco.value:
+            page.snack_bar = ft.SnackBar(content=ft.Text("Preencha todos os campos!"))
+            page.snack_bar.open = True
+            page.update()
+            return
 
-         #atualiza a lista de pizzas na tela
-         carregar_pizzas()
-    except ValueError:
-         page.show_snack_bar(ft.SnackBar(ft.Text("Erro: O preço deve ser um número.")))
-         
+        try:
+            preco = float(txt_preco.value.replace(",", "."))
+            adicionar_pizza_ao_banco(txt_nome.value, preco)
+
+            txt_nome.value = ""
+            txt_preco.value = ""
+
+            page.snack_bar = ft.SnackBar(content=ft.Text("Pizza cadastrada com sucesso!"))
+            page.snack_bar.open = True
+
+            carregar_pizzas()
+            page.update()
+
+        except ValueError:
+            page.snack_bar = ft.SnackBar(content=ft.Text("Preço inválido!"))
+            page.snack_bar.open = True
+            page.update()
+
     btn_cadastrar = ft.ElevatedButton(
-        "Cadastrar Pizza",
-        icon=ft.icons.ADD,
+        content=ft.Text("Cadastrar Pizza"),
+        icon=ft.Icons.ADD,
         on_click=cadastrar_clicado,
-        style=ft.ButtonStyle(color="white", bgcolor="red")
+        style=ft.ButtonStyle(color="white", bgcolor="red"),
     )
-    
-    #montagem da página
+
     page.add(
-        ft.Text("Painel de Cadastro", 
-style=ft.TextThemeStyle.HEADLINE_MEDIUM),
+        ft.Text("Painel de Cadastro", style=ft.TextThemeStyle.HEADLINE_MEDIUM),
         txt_nome,
         txt_preco,
         btn_cadastrar,
         ft.Divider(),
-        ft.Text("Cardápio Atual:",
-style=ft.TextThemeStyle.TITLE_MEDIUM),
-        lista_pizzas
+        ft.Text("Cardápio Atual:", style=ft.TextThemeStyle.TITLE_MEDIUM),
+        lista_pizzas,
     )
 
-    # carrega os dados assim que o app abre
     carregar_pizzas()
 
-ft.app(target=main)
+
+criar_tabela()
+ft.run(main)

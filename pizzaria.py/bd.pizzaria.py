@@ -2,7 +2,7 @@ import sqlite3
 conexao = sqlite3.connect('tabela.db')
 cursor = conexao.cursor()
 cursor.execute('''
-                CREATE TABLE IF NOT EXISTS cardapio (
+                CREATE TABLE IF NOT EXISTS pizzas (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 nome TEXT NOT NULL,
                 preco REAL NOT NULL
@@ -13,7 +13,7 @@ conexao.close()
 print("Banco de dadaos e tabela criados com sucesso!")
 
 def adicionar_pizza(nome, preco):
-    conexao = sqlite3.connect('pizzaria.db')
+    conexao = sqlite3.connect('tabela.db')
     cursor = conexao.cursor()
     cursor.execute("INSERT INTO pizzas (nome, preco) VALUES (?, ?)", (nome, preco))
     conexao.commit()
