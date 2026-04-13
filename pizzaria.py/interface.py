@@ -3,7 +3,7 @@ import sqlite3
 
 
 def criar_tabela():
-    conexao = sqlite3.connect("tabela.db")
+    conexao = sqlite3.connect('tabela.db')
     cursor = conexao.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS pizzas (
@@ -17,7 +17,7 @@ def criar_tabela():
 
 
 def adicionar_pizza_ao_banco(nome, preco):
-    conexao = sqlite3.connect("tabela.db")
+    conexao = sqlite3.connect('tabela.db')
     cursor = conexao.cursor()
     cursor.execute(
         "INSERT INTO pizzas (nome, preco) VALUES (?, ?)",
@@ -42,7 +42,7 @@ def main(page: ft.Page):
     def carregar_pizzas():
         lista_pizzas.controls.clear()
 
-        conexao = sqlite3.connect("pizzaria.db")
+        conexao = sqlite3.connect('tabela.db')
         cursor = conexao.cursor()
         cursor.execute("SELECT nome, preco FROM pizzas ORDER BY id DESC")
 
